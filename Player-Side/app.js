@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const express = require('express');
 const mysql = require('mysql2/promise');
 const session = require('express-session');
+const helmet = require("helmet");
 
 const app = express();
 
@@ -12,6 +13,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
+
+app.use(helmet());
+
+helmet.contentSecurityPolicy({
+  useDefaults: true,
+  directives: {
+    "default": "self"
+  },
+})
 
 const db = mysql.createPool({
     host: 'localhost',
@@ -34,13 +44,20 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something went wrong!');
 });
 
+
 function authenticateToken(req, res, next) {
   const token = req.cookies.token;
 
-  if (!token) return res.status(401).send('Unauthorized');
+  if (!token) {
+    req.session.error = 'Unauthorized';
+    return res.redirect('/login');
+  }
 
   jwt.verify(token, jwtSecret, (err, user) => {
-      if (err) return res.status(403).send('Forbidden');
+      if (err) {
+        req.session.error = 'Forbidden';
+        return res.redirect('/login');
+      }
       req.user = user;
       next();
   });
