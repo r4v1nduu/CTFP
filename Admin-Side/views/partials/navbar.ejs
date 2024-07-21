@@ -5,17 +5,26 @@
         </a>
         <div>
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link btn btn-primary text-white ms-1" href="/highscore">Highscore</a>
-                </li>
-                <% if (user && user.role === 'superadmin') { %>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-danger text-white ms-1" href="/manage-players">Manage Players</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-danger text-white ms-1" href="/manage-flags">Manage Flags</a>
-                    </li>
-                <% } %>
+
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Pages
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li class="nav-item">
+                            <a class="dropdown-item" href="/highscore">Highscore</a>
+                        </li>
+                        <% if (user && user.role === 'superadmin') { %>
+                            <li class="nav-item">
+                                <a class="dropdown-item" href="/manage-players">Manage Players</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="dropdown-item" href="/manage-flags">Manage Flags</a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
+
                 <% if (!user) { %>
                     <li class="nav-item">
                         <a class="nav-link ms-3" href="/login">Login</a>
