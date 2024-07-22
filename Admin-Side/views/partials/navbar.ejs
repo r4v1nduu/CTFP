@@ -11,9 +11,12 @@
                       Pages
                     </button>
                     <ul class="dropdown-menu">
-                        <li class="nav-item">
-                            <a class="dropdown-item" href="/highscore">Highscore</a>
-                        </li>
+                        <% if (user && user.role === 'superadmin') { %>
+                            <li class="nav-item">
+                                <a class="dropdown-item" href="/highscore">Highscore</a>
+                            </li>
+                        <% } %>
+                        
                         <% if (user && user.role === 'superadmin') { %>
                             <li class="nav-item">
                                 <a class="dropdown-item" href="/manage-players">Manage Players</a>

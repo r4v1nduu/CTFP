@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const app = express();
+const session = require('express-session');
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -18,6 +19,13 @@ const db = mysql.createConnection({
     password: 'NIs@0509',
     database: 'ctf'
 });
+
+app.use(session({
+    secret: '5vsaFghFA54adsF4a',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }
+  }));
 
 db.connect((err) => {
     if (err) throw err;
@@ -51,7 +59,9 @@ function isSuperAdmin(req, res, next) {
 }
 
 app.get('/login', (req, res) => {
-    res.render('login', { user: req.user });
+    const error = req.session.error || null;
+    req.session.error = null;
+    res.render('login', { user: req.user, error });
 });
 
 app.post('/login', (req, res) => {
@@ -75,7 +85,7 @@ app.get('/logout', (req, res) => {
 
 
 app.get('/highscore', authenticateToken, (req, res) => {
-    db.query('SELECT username, first_name, last_name, total_points FROM players ORDER BY total_points DESC', (err, results) => {
+    db.query('SELECT username, full_name, ctf_url, program, total_points FROM players ORDER BY total_points DESC', (err, results) => {
         if (err) throw err;
         res.render('highscore', { players: results });
     });
@@ -89,9 +99,9 @@ app.get('/manage-players', authenticateToken, isSuperAdmin, (req, res) => {
 });
 
 app.post('/manage-players/add', authenticateToken, isSuperAdmin, (req, res) => {
-    const { username, password, first_name, last_name } = req.body;
+    const { username, password, full_name, ctf_url, program } = req.body;
     const hashedPassword = bcrypt.hashSync(password, 8);
-    db.query('INSERT INTO players (username, password, first_name, last_name) VALUES (?, ?, ?, ?)', [username, hashedPassword, first_name, last_name], (err) => {
+    db.query('INSERT INTO players (username, password, full_name, ctf_url, program) VALUES (?, ?, ?, ?, ?)', [username, hashedPassword, full_name, ctf_url, program], (err) => {
         if (err) throw err;
         res.redirect('/manage-players');
     });
@@ -116,8 +126,8 @@ app.get('/manage-flags', authenticateToken, isSuperAdmin, (req, res) => {
 });
 
 app.post('/manage-flags/add', authenticateToken, isSuperAdmin, (req, res) => {
-    const { flag, points } = req.body;
-    db.query('INSERT INTO flags (flag, points) VALUES (?, ?)', [flag, points], (err) => {
+    const { flag, detail, points } = req.body;
+    db.query('INSERT INTO flags (flag, detail, points) VALUES (?, ?, ?)', [flag, detail, points], (err) => {
         if (err) throw err;
         res.redirect('/manage-flags');
     });

@@ -10,8 +10,10 @@
             <h3>Total Points: <%= user.total_points %></h3>
         </div>
         <h3 class="mb-3">Player Details :</h3>
-        <p><strong>First Name:</strong> <%= user.first_name %></p>
-        <p><strong>Last Name:</strong> <%= user.last_name %></p>
+        <p><strong>Name: </strong> <%= user.full_name %></p>
+        <p><strong>URL: </strong> <%= user.ctf_url %></p>
+        <h4>Resources:</h4>
+        <a href="/downloads/file1.txt">Download File 1</a>
     </section>
 
     <section class="mb-5">

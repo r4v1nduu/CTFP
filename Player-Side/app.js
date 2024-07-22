@@ -6,9 +6,11 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const session = require('express-session');
 const helmet = require("helmet");
+const path = require('path');
 
 const app = express();
 
+app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
 app.use(cookieParser());
@@ -114,7 +116,7 @@ app.get('/dashboard', authenticateToken, async (req, res, next) => {
 
   try {
     const [playerResults] = await db.execute(
-      'SELECT username, first_name, last_name, total_points FROM players WHERE username = ?',
+      'SELECT username, full_name, ctf_url, program, total_points FROM players WHERE username = ?',
       [req.user.id]
     );
 
