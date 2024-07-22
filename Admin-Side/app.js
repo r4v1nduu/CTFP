@@ -21,14 +21,34 @@ const db = mysql.createConnection({
 
 db.connect((err) => {
     if (err) throw err;
-    console.log('Connected to database');
 });
 
 const admins = [
     { username: 'admin', password: bcrypt.hashSync('admin', 8), role: 'admin' },
     { username: 'superadmin', password: bcrypt.hashSync('superadmin', 8), role: 'superadmin' }
 ];
-const jwtSecret = 'your_jwt_secret';
+
+const jwtSecret = 'WQggYZ6lyFUNuU0IZ65SdLLg33y7bBFf';
+
+function authenticateToken(req, res, next) {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(401).send('Unauthorized');
+
+    jwt.verify(token, jwtSecret, (err, user) => {
+        if (err) return res.status(403).send('Forbidden');
+        res.locals.user = user;
+        req.user = user;
+        next();
+    });
+}
+
+function isSuperAdmin(req, res, next) {
+    if (req.user.role !== 'superadmin') {
+        return res.status(403).send('Forbidden');
+    }
+    next();
+}
 
 app.get('/login', (req, res) => {
     res.render('login', { user: req.user });
@@ -52,25 +72,7 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 
-function authenticateToken(req, res, next) {
-    const token = req.cookies.token;
 
-    if (!token) return res.status(401).send('Unauthorized');
-
-    jwt.verify(token, jwtSecret, (err, user) => {
-        if (err) return res.status(403).send('Forbidden');
-        res.locals.user = user;
-        req.user = user;
-        next();
-    });
-}
-
-function isSuperAdmin(req, res, next) {
-    if (req.user.role !== 'superadmin') {
-        return res.status(403).send('Forbidden');
-    }
-    next();
-}
 
 app.get('/highscore', authenticateToken, (req, res) => {
     db.query('SELECT username, first_name, last_name, total_points FROM players ORDER BY total_points DESC', (err, results) => {
@@ -129,6 +131,9 @@ app.post('/manage-flags/delete', authenticateToken, isSuperAdmin, (req, res) => 
     });
 });
 
+app.get('*', (req, res) => {
+    res.status(404).render('error', { message: 'Page not found', user: req.user });
+});
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

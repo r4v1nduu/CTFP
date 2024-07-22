@@ -33,7 +33,7 @@ const db = mysql.createPool({
 const jwtSecret = 'WQggYZ6lyFUNuU0IZ65SdLLg33y7bBFf';
 
 app.use(session({
-  secret: 'your-secret-key',
+  secret: 'WQggYZ6lyFUNuU0IZ65SdLLg33y7bBFf',
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false } // Set to true if using HTTPS
@@ -62,6 +62,10 @@ function authenticateToken(req, res, next) {
       next();
   });
 }
+
+
+
+
 
 app.get('/', (req, res) => {
   res.redirect('/dashboard');
@@ -105,7 +109,7 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/dashboard', authenticateToken, async (req, res, next) => {
-  let errorMessage = req.session.error;
+  let error = req.session.error;
   req.session.error = null; // Clear the error message after retrieving
 
   try {
@@ -120,7 +124,7 @@ app.get('/dashboard', authenticateToken, async (req, res, next) => {
     );
 
     const user = playerResults[0];
-    res.render('dashboard', { user: user, flags: flagResults, errorMessage });
+    res.render('dashboard', { user: user, flags: flagResults, error });
   } catch (err) {
     next(err);
   }
@@ -156,6 +160,10 @@ app.post('/submit-flag', authenticateToken, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+app.get('*', (req, res) => {
+  res.status(404).render('error', { message: 'Page not found', user: req.user });
 });
 
 
