@@ -12,11 +12,15 @@ const app = express();
 
 app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
-app.use(helmet());
+app.use(
+  helmet({
+    hsts: false,
+  })
+);
 
 helmet.contentSecurityPolicy({
   useDefaults: true,
